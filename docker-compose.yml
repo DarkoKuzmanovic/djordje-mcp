@@ -1,0 +1,18 @@
+services:
+  app:
+    build: .
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.djordje.rule=Host(`mcp.example.com`)"
+      - "traefik.http.routers.djordje.entrypoints=websecure"
+      - "traefik.http.routers.djordje.tls.certresolver=letsencrypt"
+      - "traefik.http.services.djordje.loadbalancer.server.port=3000"
+    networks:
+      - web
+    env_file:
+      - .env
+    restart: unless-stopped
+
+networks:
+  web:
+    external: true
