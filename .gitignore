@@ -8,3 +8,6 @@ dist
 project-plan.md
 knowledge-base-ideas.md
 sync.sh
+*.docx
+docker-compose.yml
+CLAUDE.local.md

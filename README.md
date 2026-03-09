@@ -12,6 +12,12 @@ Paste a Gorgias ticket URL or ID in Claude.ai and discuss it directly.
 | `list_ticket_messages` | Get full conversation thread |
 | `get_customer` | Customer details by ID |
 | `search_tickets` | Filter tickets by status, customer, assignee |
+| `create_ticket` | Create a new ticket |
+| `create_ticket_message` | Post a message or internal note on a ticket |
+| `update_ticket` | Update ticket metadata (subject, priority, etc.) |
+| `assign_ticket` | Assign ticket to a user or team |
+| `close_ticket` | Close a ticket with optional internal note |
+| `reply_to_ticket` | Send an email reply to the customer |
 
 ## Setup
 
@@ -51,6 +57,9 @@ Once deployed, add your server URL in Claude.ai: **Settings → Integrations →
 | `GORGIAS_DOMAIN` | Your Gorgias subdomain (e.g. `myshop` for myshop.gorgias.com) |
 | `GORGIAS_EMAIL` | Gorgias account email |
 | `GORGIAS_API_KEY` | Gorgias REST API key |
+| `GORGIAS_EMAIL_INTEGRATION_ID` | Email integration ID (for routing) |
+| `GORGIAS_USER_ID` | Gorgias user ID (for agent sender) |
+| `MCP_MASTER_KEY` | Master key for the admin panel |
 
 ## License
 

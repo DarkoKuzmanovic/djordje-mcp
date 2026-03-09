@@ -16,6 +16,7 @@ RUN npm ci --omit=dev
 COPY --from=builder /app/dist/ dist/
 
 RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN mkdir -p /app/data && chown appuser:appuser /app/data
 USER appuser
 
 EXPOSE 3000

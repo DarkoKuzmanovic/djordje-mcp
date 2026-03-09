@@ -1,6 +1,6 @@
 # Djordje — Gorgias MCP Server
 
-Internal MCP server connecting Gorgias helpdesk to Claude.ai .
+MCP server connecting Gorgias helpdesk to Claude.ai.
 
 ## Architecture
 
@@ -8,7 +8,7 @@ Internal MCP server connecting Gorgias helpdesk to Claude.ai .
 - **Protocol**: MCP Spec 2025-06-18 (Streamable HTTP)
 - **Transport**: Served on root `/` — POST for JSON-RPC, GET for SSE, DELETE for session teardown
 - **Auth**: Gorgias API via HTTP Basic (email:api_key)
-- **Deployment**: Docker on TransIP VPS behind Traefik at `mcp.example.com`
+- **Deployment**: Docker behind Traefik reverse proxy (see `CLAUDE.local.md` for instance-specific details)
 
 ## Commands
 
@@ -46,8 +46,8 @@ src/
 
 ```
 PORT=3000
-GORGIAS_DOMAIN=your-domain         # → your-domain.gorgias.com
-GORGIAS_EMAIL=darko@...
+GORGIAS_DOMAIN=your-domain     # → your-domain.gorgias.com
+GORGIAS_EMAIL=you@...
 GORGIAS_API_KEY=...
 ```
 

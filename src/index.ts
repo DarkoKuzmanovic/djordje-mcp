@@ -71,10 +71,15 @@ function getBearerToken(req: IncomingMessage): string | null {
   return header.slice(7);
 }
 
+function getQueryKey(req: IncomingMessage): string | null {
+  const url = new URL(req.url ?? "/", "http://localhost");
+  return url.searchParams.get("key");
+}
+
 function isMcpAuthorized(req: IncomingMessage): boolean {
-  const token = getBearerToken(req);
+  const token = getBearerToken(req) ?? getQueryKey(req);
   if (!token) return false;
-  return token === MCP_MASTER_KEY || validateKey(token);
+  return validateKey(token);
 }
 
 function isMasterAuthorized(req: IncomingMessage): boolean {
@@ -99,15 +104,16 @@ function json(res: ServerResponse, status: number, body: unknown) {
 async function handleAdmin(req: IncomingMessage, res: ServerResponse) {
   const url = req.url ?? "";
 
-  if (!isMasterAuthorized(req)) {
-    json(res, 401, { error: "Unauthorized — master key required" });
+  // Serve the admin HTML without auth — it's just a static shell.
+  // All sensitive operations go through /admin/keys which requires the master key.
+  if (req.method === "GET" && (url === "/admin" || url.startsWith("/admin?"))) {
+    res.writeHead(200, { "Content-Type": "text/html" });
+    res.end(ADMIN_HTML);
     return;
   }
 
-  // GET /admin — key management UI
-  if (req.method === "GET" && (url === "/admin" || url === "/admin/")) {
-    res.writeHead(200, { "Content-Type": "text/html" });
-    res.end(ADMIN_HTML);
+  if (!isMasterAuthorized(req)) {
+    json(res, 401, { error: "Unauthorized — master key required" });
     return;
   }
 
