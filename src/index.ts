@@ -10,6 +10,8 @@ import { registerListMessages } from "./tools/list-messages.js";
 import { registerGetCustomer } from "./tools/get-customer.js";
 import { registerSearchTickets } from "./tools/search-tickets.js";
 import { registerCreateTicketMessage } from "./tools/create-ticket-message.js";
+import { registerCreateTicket } from "./tools/create-ticket.js";
+import { registerUpdateTicket } from "./tools/update-ticket.js";
 
 dotenv.config();
 
@@ -42,6 +44,8 @@ function createMcpServer(): McpServer {
   registerGetCustomer(server, gorgiasClient);
   registerSearchTickets(server, gorgiasClient);
   registerCreateTicketMessage(server, gorgiasClient);
+  registerCreateTicket(server, gorgiasClient);
+  registerUpdateTicket(server, gorgiasClient);
 
   return server;
 }

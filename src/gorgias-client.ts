@@ -122,6 +122,41 @@ export interface GorgiasPaginatedResponse<T> {
   };
 }
 
+export interface CreateTicketPayload {
+  via: string;
+  channel?: string;
+  from_agent?: boolean;
+  subject?: string;
+  status?: string;
+  priority?: string;
+  customer?: { id?: number; email?: string; name?: string };
+  assignee_user?: { id: number } | null;
+  assignee_team?: { id: number } | null;
+  tags?: Array<{ name: string }>;
+  messages: Array<{
+    channel: string;
+    from_agent: boolean;
+    via: string;
+    body_text?: string;
+    body_html?: string;
+    source?: {
+      type: string;
+      from: { name?: string; address: string };
+      to: Array<{ name?: string; address: string }>;
+    };
+  }>;
+}
+
+export interface UpdateTicketPayload {
+  status?: string;
+  priority?: string;
+  subject?: string;
+  assignee_user?: { id: number } | null;
+  assignee_team?: { id: number } | null;
+  tags?: Array<{ name: string }>;
+  snooze_datetime?: string | null;
+}
+
 export interface CreateMessagePayload {
   channel: string;
   from_agent: boolean;
@@ -228,6 +263,27 @@ export class GorgiasClient {
       `/tickets/${ticketId}/messages`,
       "POST",
       message as unknown as Record<string, unknown>,
+    );
+  }
+
+  async createTicket(
+    payload: CreateTicketPayload,
+  ): Promise<GorgiasTicket> {
+    return this.mutate<GorgiasTicket>(
+      "/tickets",
+      "POST",
+      payload as unknown as Record<string, unknown>,
+    );
+  }
+
+  async updateTicket(
+    ticketId: number,
+    payload: UpdateTicketPayload,
+  ): Promise<GorgiasTicket> {
+    return this.mutate<GorgiasTicket>(
+      `/tickets/${ticketId}`,
+      "PUT",
+      payload as unknown as Record<string, unknown>,
     );
   }
 
