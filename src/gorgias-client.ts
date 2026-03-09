@@ -122,6 +122,20 @@ export interface GorgiasPaginatedResponse<T> {
   };
 }
 
+export interface CreateMessagePayload {
+  channel: string;
+  from_agent: boolean;
+  via: string;
+  body_text?: string;
+  body_html?: string;
+  source?: {
+    type: string;
+    from: { name?: string; address: string };
+    to: Array<{ name?: string; address: string }>;
+  };
+  sender?: { id: number };
+}
+
 export class GorgiasClient {
   private baseUrl: string;
   private authHeader: string;
@@ -163,6 +177,31 @@ export class GorgiasClient {
     return response.json() as Promise<T>;
   }
 
+  private async mutate<T>(
+    path: string,
+    method: "POST" | "PUT",
+    body: Record<string, unknown>,
+  ): Promise<T> {
+    const response = await fetch(`${this.baseUrl}${path}`, {
+      method,
+      headers: {
+        Authorization: this.authHeader,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(
+        `Gorgias API error ${response.status}: ${response.statusText} — ${text}`,
+      );
+    }
+
+    return response.json() as Promise<T>;
+  }
+
   async getTicket(id: number): Promise<GorgiasTicket> {
     return this.request<GorgiasTicket>(`/tickets/${id}`);
   }
@@ -179,6 +218,17 @@ export class GorgiasClient {
 
   async getCustomer(id: number): Promise<GorgiasCustomer> {
     return this.request<GorgiasCustomer>(`/customers/${id}`);
+  }
+
+  async createTicketMessage(
+    ticketId: number,
+    message: CreateMessagePayload,
+  ): Promise<GorgiasMessage> {
+    return this.mutate<GorgiasMessage>(
+      `/tickets/${ticketId}/messages`,
+      "POST",
+      message as unknown as Record<string, unknown>,
+    );
   }
 
   async searchTickets(filters: {
