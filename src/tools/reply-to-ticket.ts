@@ -36,12 +36,15 @@ export function registerReplyToTicket(
       const inboundTo = inboundMsg?.source?.to?.[0]?.address;
       const fromAddress = inboundTo ?? agentEmail;
 
+      // Resolve customer ID for the receiver field
+      const customerId = t.customer.id;
+
       const msg = await client.createTicketMessage(ticketId, {
         channel: "email",
-        via: "email",
+        via: "helpdesk",
         from_agent: true,
-        sender: { id: userId || undefined, email: agentEmail },
-        integration_id: integrationId ?? undefined,
+        sender: { id: userId || undefined },
+        receiver: { id: customerId, email: customerEmail },
         source: {
           type: "email",
           from: { address: fromAddress },

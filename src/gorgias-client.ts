@@ -169,6 +169,7 @@ export interface CreateMessagePayload {
     to: Array<{ name?: string; address: string }>;
   };
   sender?: { id?: number; email?: string };
+  receiver?: { id?: number; email?: string };
   integration_id?: number;
 }
 
