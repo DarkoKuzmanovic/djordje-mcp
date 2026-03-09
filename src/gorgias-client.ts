@@ -168,15 +168,17 @@ export interface CreateMessagePayload {
     from: { name?: string; address: string };
     to: Array<{ name?: string; address: string }>;
   };
-  sender?: { id: number };
+  sender?: { id?: number; email?: string };
 }
 
 export class GorgiasClient {
   private baseUrl: string;
   private authHeader: string;
+  public readonly email: string;
 
   constructor(config: GorgiasConfig) {
     this.baseUrl = `https://${config.domain}.gorgias.com/api`;
+    this.email = config.email;
     this.authHeader =
       "Basic " +
       Buffer.from(`${config.email}:${config.apiKey}`).toString("base64");

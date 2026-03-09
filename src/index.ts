@@ -14,6 +14,7 @@ import { registerCreateTicket } from "./tools/create-ticket.js";
 import { registerUpdateTicket } from "./tools/update-ticket.js";
 import { registerAssignTicket } from "./tools/assign-ticket.js";
 import { registerCloseTicket } from "./tools/close-ticket.js";
+import { registerReplyToTicket } from "./tools/reply-to-ticket.js";
 
 dotenv.config();
 
@@ -50,6 +51,7 @@ function createMcpServer(): McpServer {
   registerUpdateTicket(server, gorgiasClient);
   registerAssignTicket(server, gorgiasClient);
   registerCloseTicket(server, gorgiasClient);
+  registerReplyToTicket(server, gorgiasClient);
 
   return server;
 }
