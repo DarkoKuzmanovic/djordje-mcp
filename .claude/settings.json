@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm start:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx @modelcontextprotocol/inspector:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git show:*)",
+      "Bash(ls:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(git push:*)",
+      "Bash(ssh:*)",
+      "Bash(rsync:*)",
+      "Bash(bash sync.sh:*)",
+      "Read(.env)",
+      "Read(data/api-keys.json)",
+      "Read(CLAUDE.local.md)"
+    ]
+  }
+}
