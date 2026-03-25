@@ -122,6 +122,18 @@ export interface GorgiasPaginatedResponse<T> {
   };
 }
 
+export interface GorgiasSearchHit {
+  id: number;
+  subject: string;
+  status: string;
+  channel: string;
+  customer: { id: number; email: string; name: string };
+  assignee_user: { id: number; email: string; name: string } | null;
+  tags: Array<{ id: number; name: string }>;
+  created_datetime: string;
+  closed_datetime: string | null;
+}
+
 export interface CreateTicketPayload {
   via: string;
   channel?: string;
@@ -204,6 +216,7 @@ export class GorgiasClient {
         Authorization: this.authHeader,
         Accept: "application/json",
       },
+      signal: AbortSignal.timeout(30_000),
     });
 
     if (!response.ok) {
@@ -229,6 +242,7 @@ export class GorgiasClient {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(30_000),
     });
 
     if (!response.ok) {
@@ -291,20 +305,71 @@ export class GorgiasClient {
     );
   }
 
+  async searchCustomers(filters: {
+    email?: string;
+    limit?: number;
+  }): Promise<GorgiasPaginatedResponse<GorgiasCustomer>> {
+    return this.request<GorgiasPaginatedResponse<GorgiasCustomer>>(
+      "/customers",
+      {
+        email: filters.email,
+        limit: filters.limit ?? 20,
+      },
+    );
+  }
+
   async searchTickets(filters: {
     status?: string;
     customer_id?: number;
+    customer_email?: string;
     assignee_user_id?: number;
-    tag?: string;
     limit?: number;
     cursor?: string;
   }): Promise<GorgiasPaginatedResponse<GorgiasTicket>> {
     return this.request<GorgiasPaginatedResponse<GorgiasTicket>>("/tickets", {
       status: filters.status,
       customer_id: filters.customer_id,
+      customer__email: filters.customer_email,
       assignee_user_id: filters.assignee_user_id,
       limit: filters.limit ?? 20,
       cursor: filters.cursor,
     });
+  }
+
+  async search(
+    query: string,
+    size = 10,
+  ): Promise<GorgiasSearchHit[]> {
+    try {
+      const raw = await this.mutate<Record<string, unknown>>("/search", "POST", {
+        type: "ticket",
+        query,
+        limit: size,
+      });
+      // Response shape may vary — try common field names
+      const hits = raw.hits ?? raw.data ?? raw.results ?? [];
+      return hits as GorgiasSearchHit[];
+    } catch {
+      // Fallback: fetch recent tickets and filter client-side by subject keywords
+      const response = await this.request<GorgiasPaginatedResponse<GorgiasTicket>>(
+        "/tickets",
+        { limit: Math.min(size * 10, 100), order_by: "created_datetime:desc" },
+      );
+      const terms = query.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
+      const filtered = response.data.filter((t) =>
+        terms.some((term) => t.subject.toLowerCase().includes(term)),
+      );
+      return filtered.slice(0, size).map((t) => ({
+        id: t.id,
+        subject: t.subject,
+        status: t.status,
+        channel: t.channel,
+        customer: t.customer,
+        assignee_user: t.assignee_user,
+        tags: t.tags,
+        created_datetime: t.created_datetime,
+        closed_datetime: t.closed_datetime,
+      }));
+    }
   }
 }

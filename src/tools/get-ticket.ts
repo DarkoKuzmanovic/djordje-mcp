@@ -15,7 +15,7 @@ export function registerGetTicket(server: McpServer, client: GorgiasClient) {
       const summary = [
         `Ticket #${t.id}: ${t.subject}`,
         `Status: ${t.status} | Priority: ${t.priority} | Channel: ${t.channel}`,
-        `Customer: ${t.customer.name} <${t.customer.email}>`,
+        `Customer: ${t.customer.name} <${t.customer.email}> (ID: ${t.customer.id})`,
         t.assignee_user
           ? `Assignee: ${t.assignee_user.name} <${t.assignee_user.email}>`
           : "Assignee: Unassigned",

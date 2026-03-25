@@ -12,3 +12,4 @@ sync.sh
 *.docx
 docker-compose.yml
 CLAUDE.local.md
+.mcp.json

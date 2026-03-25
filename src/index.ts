@@ -15,6 +15,7 @@ import { registerUpdateTicket } from "./tools/update-ticket.js";
 import { registerAssignTicket } from "./tools/assign-ticket.js";
 import { registerCloseTicket } from "./tools/close-ticket.js";
 import { registerReplyToTicket } from "./tools/reply-to-ticket.js";
+import { registerFindSimilarTickets } from "./tools/find-similar-tickets.js";
 import { validateKey, listKeys, createKey, revokeKey } from "./key-store.js";
 
 dotenv.config();
@@ -59,6 +60,7 @@ function createMcpServer(): McpServer {
   registerAssignTicket(server, gorgiasClient);
   registerCloseTicket(server, gorgiasClient);
   registerReplyToTicket(server, gorgiasClient);
+  registerFindSimilarTickets(server, gorgiasClient);
 
   return server;
 }
@@ -88,10 +90,18 @@ function isMasterAuthorized(req: IncomingMessage): boolean {
 
 // --- Admin helpers ---
 
+const MAX_BODY_SIZE = 1024 * 1024; // 1 MB
+
 function readBody(req: IncomingMessage): Promise<string> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let data = "";
-    req.on("data", (chunk: Buffer) => (data += chunk.toString()));
+    req.on("data", (chunk: Buffer) => {
+      data += chunk.toString();
+      if (data.length > MAX_BODY_SIZE) {
+        req.destroy();
+        reject(new Error("Request body too large"));
+      }
+    });
     req.on("end", () => resolve(data));
   });
 }
@@ -125,7 +135,13 @@ async function handleAdmin(req: IncomingMessage, res: ServerResponse) {
 
   // POST /admin/keys — create key
   if (req.method === "POST" && url === "/admin/keys") {
-    const body = JSON.parse(await readBody(req));
+    let body: Record<string, unknown>;
+    try {
+      body = JSON.parse(await readBody(req));
+    } catch {
+      json(res, 400, { error: "Invalid JSON" });
+      return;
+    }
     const label = body.label;
     if (!label || typeof label !== "string") {
       json(res, 400, { error: "label is required" });
@@ -193,7 +209,12 @@ const httpServer = createServer(async (req, res) => {
       });
 
       const server = createMcpServer();
-      await server.connect(transport);
+      try {
+        await server.connect(transport);
+      } catch (err) {
+        await transport.close();
+        throw err;
+      }
 
       transport.onclose = () => {
         if (transport.sessionId) {
@@ -290,7 +311,7 @@ const ADMIN_HTML = `<!DOCTYPE html>
 <div id="keys"></div>
 
 <script>
-const KEY = new URLSearchParams(location.search).get("key") || localStorage.getItem("master_key") || prompt("Master key:");
+const KEY = localStorage.getItem("master_key") || prompt("Master key:");
 if (KEY) localStorage.setItem("master_key", KEY);
 const headers = { "Authorization": "Bearer " + KEY, "Content-Type": "application/json" };
 

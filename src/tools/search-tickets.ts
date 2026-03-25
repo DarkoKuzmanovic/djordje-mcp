@@ -8,13 +8,17 @@ export function registerSearchTickets(
 ) {
   server.tool(
     "search_tickets",
-    "Search and filter Gorgias tickets by status, customer, assignee, or tag.",
+    "Filter Gorgias tickets by status, customer, assignee, or email. For full-text search, use find_similar_tickets instead.",
     {
       status: z
         .enum(["open", "closed", "unresolved"])
         .optional()
         .describe("Filter by ticket status"),
       customer_id: z.number().optional().describe("Filter by customer ID"),
+      customer_email: z
+        .string()
+        .optional()
+        .describe("Filter by customer email address"),
       assignee_user_id: z
         .number()
         .optional()

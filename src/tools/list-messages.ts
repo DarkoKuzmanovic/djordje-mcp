@@ -22,12 +22,19 @@ export function registerListMessages(
       const id = parseTicketId(ticket);
       const result = await client.listTicketMessages(id, limit);
 
+      if (!result.data || !Array.isArray(result.data)) {
+        return {
+          content: [{ type: "text", text: `Ticket #${id} has no messages.` }],
+        };
+      }
+
       const messages = result.data.map((msg) => {
-        const from = msg.from_agent ? `[Agent] ${msg.sender.name}` : `[Customer] ${msg.sender.name}`;
+        const senderName = msg.sender?.name ?? "Unknown";
+        const from = msg.from_agent ? `[Agent] ${senderName}` : `[Customer] ${senderName}`;
         const date = msg.created_datetime;
         const body = msg.stripped_text || msg.body_text || "(no text content)";
         const attachments =
-          msg.attachments.length > 0
+          msg.attachments?.length > 0
             ? `\nAttachments: ${msg.attachments.map((a) => a.name).join(", ")}`
             : "";
 

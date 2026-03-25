@@ -1,4 +1,5 @@
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 import { randomBytes } from "node:crypto";
 
 export interface ApiKey {
@@ -13,12 +14,15 @@ const KEY_FILE = process.env.KEY_FILE ?? "./data/api-keys.json";
 let keys: ApiKey[] = [];
 
 function load() {
-  if (existsSync(KEY_FILE)) {
+  try {
     keys = JSON.parse(readFileSync(KEY_FILE, "utf-8"));
+  } catch {
+    keys = [];
   }
 }
 
 function save() {
+  mkdirSync(dirname(KEY_FILE), { recursive: true });
   writeFileSync(KEY_FILE, JSON.stringify(keys, null, 2));
 }
 
